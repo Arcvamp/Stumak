@@ -16,6 +16,7 @@ class Products extends Migration
             $table->id();
             $table->int('category_id');
             $table->string('title', 100);
+            $table->string('image', 200);
             $table->decimal('price', 10, 2);
             $table->text('description')->nullable();
             $table->boolean('negotiation')->default(false);
