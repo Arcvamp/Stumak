@@ -10,7 +10,10 @@ class RegisterController extends Controller
 {
 
     public function create(){
-        //
+
+        return view('register', [
+            'title' => 'Create Account'
+        ]);
     }
 
     public function store(Request $request){
