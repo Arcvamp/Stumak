@@ -4,30 +4,26 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class Attributes extends Migration
+return new class extends Migration
 {
     /**
      * Run the migrations.
-     *
-     * @return void
      */
-    public function up()
+    public function up(): void
     {
         Schema::create('attributes', function (Blueprint $table) {
             $table->id();
             $table->string('name',100);
-            $table->int('category_id')->nullable();
+            $table->foreignIdFor(App\Models\Category::class, 'category_id');
             $table->timestamps();
         });
     }
 
     /**
      * Reverse the migrations.
-     *
-     * @return void
      */
-    public function down()
+    public function down(): void
     {
         Schema::dropIfExists('attributes');
     }
-}
+};

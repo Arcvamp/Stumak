@@ -1,20 +1,19 @@
 <?php
+
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class Products extends Migration
+return new class extends Migration
 {
     /**
      * Run the migrations.
-     *
-     * @return void
      */
-    public function up()
+    public function up(): void
     {
         Schema::create('products', function (Blueprint $table) {
             $table->id();
-            $table->int('category_id');
+            $table->foreignIdFor(App\Models\Category::class, 'category_id');
             $table->string('title', 100);
             $table->string('image', 200);
             $table->decimal('price', 10, 2);
@@ -22,19 +21,15 @@ class Products extends Migration
             $table->boolean('negotiation')->default(false);
             $table->string('contact', 50);
             $table->string('email', 100);
-            $table->datetime('created_at');
-            $table->datetime('updated_at');
             $table->timestamps();
         });
     }
 
     /**
      * Reverse the migrations.
-     *
-     * @return void
      */
-    public function down()
+    public function down(): void
     {
         Schema::dropIfExists('products');
     }
-}
+};
