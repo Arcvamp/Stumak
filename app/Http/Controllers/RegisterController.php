@@ -5,13 +5,14 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\User;
 use Illuminate\Validation\ValidationException;
+use Illuminate\Support\Facades\Auth;
 
 class RegisterController extends Controller
 {
 
     public function create(){
 
-        return view('register', [
+        return view('user/register', [
             'title' => 'Create Account'
         ]);
     }
@@ -36,6 +37,8 @@ class RegisterController extends Controller
                 'error' => 'Error Messages'
             ]);
         }
+
+        Auth::login($results);
 
         // Redirect to Sign in
         return redirect('/signin');

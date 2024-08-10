@@ -6,10 +6,15 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use App\Models\Role;
 
 class User extends Authenticatable
 {
     use HasFactory, Notifiable;
+
+    public function Role(){
+        return $this->belongsTo(Role::class, 'role_id');
+    }
 
     /**
      * The attributes that are mass assignable.

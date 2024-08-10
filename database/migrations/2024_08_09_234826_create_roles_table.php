@@ -4,6 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
+
 return new class extends Migration
 {
     /**
@@ -12,7 +13,8 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('roles', function (Blueprint $table) {
-            $table->id();           
+            $table->id();
+            $table->foreignIdFor(App\Models\Permission::class, 'pm_id');
             $table->string('name')->unique(); // Role name
             $table->string('slug')->unique(); // Slug for URL-friendly role name
             $table->text('description')->nullable(); // Description of the role
