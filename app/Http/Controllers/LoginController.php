@@ -69,7 +69,7 @@ class LoginController extends Controller
         }
 
         // Default redirect if role isn't matched
-        return redirect('/signin')->withErrors(['error' => 'Unauthorized role']);
+        return redirect('/api/signin')->withErrors(['error' => 'Unauthorized role']);
     }
 
     public function logout(Request $request)

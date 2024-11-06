@@ -181,7 +181,7 @@
                       <p class="fs-4 mb-0 fw-medium">New to Xtreme?</p>
                       <a
                         class="text-primary fw-medium ms-2"
-                        href="{{ route('api/signin') }}"
+                        href="{{ route('login') }}"
                         >Create an account</a
                       >
                     </div>
