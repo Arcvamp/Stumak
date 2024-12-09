@@ -53,7 +53,7 @@
                     </div>
 
                     <div class="table-responsive">
-                        <table id="productTable" class="table w-100 table-striped table-bordered display  dataTable">
+                        <table id="productTable" class="table table-lg mb-0 table-striped table-bordered   dataTable">
                             <thead>
                                 <tr>
                                     <th>Image</th>
@@ -63,7 +63,7 @@
                                     <th>Description</th>
                                     <th>Negotiation</th>
                                     <th>Contact</th>
-                                    <th>Created At</th>
+                                    
                                     <th>option</th>
                                 </tr>
                             </thead>
@@ -78,7 +78,7 @@
                                     <th>Description</th>
                                     <th>Negotiation</th>
                                     <th>Contact</th>
-                                    <th>Created At</th>
+                                    
                                     <th>option</th>
                                 </tr>
                                 <!-- end row -->
@@ -176,7 +176,7 @@
 
                         <!-- Submit Button -->
                         <div class="form-actions mb-9">
-                            <button type="submit" class="btn btn-primary">Save changes</button>
+                            <button type="submit" id="addbtn" class="btn btn-primary">add product</button>
                         </div>
                     </form>
                 </div>
@@ -207,7 +207,6 @@
                             <input type="text" hidden disabled class="form-control" name="product_id" required>
                             <p class="fs-2">A product name is required and recommended to be unique.</p>
                         </div>
-
                         <!-- Vendor Email -->
                         <div class="mb-3">
                             <label for="vendor_email" class="form-label">Vendor Email <span
@@ -215,7 +214,6 @@
                             <input type="email" class="form-control" name="vendor_email" required>
                             <p class="fs-2">The vendor email is required.</p>
                         </div>
-
                         <!-- Vendor Number -->
                         <div class="mb-3">
                             <label for="vendor_number" class="form-label">Vendor Number <span
@@ -223,14 +221,12 @@
                             <input type="text" class="form-control" name="vendor_number" required>
                             <p class="fs-2">The vendor number is required.</p>
                         </div>
-
                         <!-- Product Description -->
                         <div class="mb-3">
                             <label for="description" class="form-label">Description</label>
                             <textarea class="form-control" name="description"></textarea>
                             <p class="fs-2">Set a description for the product for better visibility.</p>
                         </div>
-
                         <!-- Image Upload -->
                         <div class="mb-3">
                             <label class="form-label">Product Images</label>
@@ -239,9 +235,6 @@
                             <p class="fs-2">Only *.png, *.jpg, and *.jpeg image files are accepted.</p>
                             <div id="imagePreviewContainers" class="row"></div>
                         </div>
-
-
-
                         <!-- Pricing -->
                         <div class="mb-3">
                             <label for="basePrice" class="form-label">Base Price <span
@@ -249,7 +242,6 @@
                             <input type="text" class="form-control" name="base_price" required>
                             <p class="fs-2">Set the product price.</p>
                         </div>
-
                         <!-- Negotiable Option -->
                         <div class="mb-3">
                             <div class="form-check py-2">
@@ -260,7 +252,6 @@
                                 </label>
                             </div>
                         </div>
-
                         <!-- Category Selection -->
                         <div class="mb-3">
                             <label for="categories" class="form-label">Categories</label>
@@ -280,7 +271,7 @@
 
                         <!-- Submit Button -->
                         <div class="form-actions mb-9">
-                            <button type="submit" class="btn btn-primary">Save changes</button>
+                            <button type="submit" id="updatebtn" class="btn btn-primary">update product</button>
                         </div>
                     </form>
                 </div>
@@ -349,10 +340,7 @@
                             data: 'contact',
                             name: 'contact'
                         },
-                        {
-                            data: 'created_at',
-                            name: 'created_at'
-                        },
+                        
                         {
                             data: null, // Action column
                             name: 'actions',
@@ -378,7 +366,13 @@
                 // Handle form submission via AJAX
                 $("#productForm").on("submit", function(event) {
                     event.preventDefault();
+                    const addbutton = $("#addbtn");
 
+                    // Change button content to spinner
+                    addbutton.html(`
+                        <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                        Loading...`);
+                    addbutton.prop("disabled", true); // Disable the button
                     // Create a FormData object to handle file uploads
                     let formData = new FormData(this);
 
@@ -407,6 +401,12 @@
                         error: function(xhr) {
                             // Display errors if any
                             alert("An error occurred: " + xhr.responseText);
+                            Swal.fire({
+                                type: "error",
+                                title: "Oops...",
+                                text: xhr.responseText,
+                            });
+                            resetButton(addbutton);
                         }
                     });
                 });
@@ -415,7 +415,11 @@
             $('#productTable').on('click', '.edit-btn', function() {
                 let id = $(this).data('id');
                 if (!id) {
-                    console.error("Product ID is missing!");
+                    Swal.fire({
+                        type: "error",
+                        title: "Oops...",
+                        text: "Product ID is missing!",
+                    });
                     return;
                 }
 
@@ -499,7 +503,12 @@
                     },
                     error: function(xhr) {
                         console.error("Error fetching product data:", xhr.responseText);
-                        alert('Unable to fetch product data. Please try again.');
+                        Swal.fire({
+                            type: "error",
+                            title: "Oops...",
+                            text: "Unable to fetch product data. Please try again.",
+                        });
+
                     }
                 });
             });
@@ -523,13 +532,28 @@
                         success: function(response) {
                             if (response.success) {
                                 table.ajax.reload(null, false); // Reload table without resetting pagination
-                                alert('Product deleted successfully');
+                                alert('');
+                                Swal.fire({
+                                    type: "success",
+                                    title: "successfull",
+                                    text: "Product deleted successfully",
+                                });
                             } else {
-                                alert('Failed to delete product');
+                                Swal.fire({
+                                    type: "success",
+                                    title: "successfull",
+                                    text: "Failed to delete product",
+                                });
+
                             }
                         },
                         error: function(xhr) {
                             console.error('Delete error:', xhr.responseText);
+                            Swal.fire({
+                                type: "error",
+                                title: "Oops...",
+                                text: "Failed to delete product",
+                            });
                             alert('An error occurred. Check console for details.');
                         }
                     });
@@ -577,11 +601,22 @@
                             };
                             reader.readAsDataURL(file);
                         } else {
-                            console.warn(`Skipped file: ${file.name}. Not an image.`);
+                            console.warn();
+                            Swal.fire({
+                                type: "error",
+                                title: "Oops...",
+                                text: `Skipped file: ${file.name}. Not an image.`,
+                            });
+
                         }
                     });
                 } else {
-                    console.log("No files selected or browser does not support file inputs.");
+
+                    Swal.fire({
+                        type: "error",
+                        title: "Oops...",
+                        text: "No files selected or browser does not support file inputs.",
+                    });
                 }
             }
 
@@ -626,11 +661,22 @@
                             };
                             reader.readAsDataURL(file);
                         } else {
-                            console.warn(`Skipped file: ${file.name}. Not an image.`);
+                            Swal.fire({
+                                type: "error",
+                                title: "Oops...",
+                                text: `Skipped file: ${file.name}. Not an image.`,
+                            });
+
                         }
                     });
                 } else {
                     console.log("No files selected or browser does not support file inputs.");
+                    Swal.fire({
+                        type: "error",
+                        title: "Oops...",
+                        text: "No files selected or browser does not support file inputs.",
+                    });
+
                 }
             }
 
@@ -638,47 +684,86 @@
                 $('#updateProduct').on('submit', function(event) {
                     event.preventDefault(); // Prevent default form submission
                     const form = $(this);
+                    const updateButton = $("#updatebtn");
+
+                    // Change button content to spinner
+                    updateButton.html(`
+                        <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                        Loading...`);
+                    updateButton.prop("disabled", true); // Disable the button
+
                     const formData = new FormData(this);
                     const id = form.find('[name="product_id"]').val();
                     if (!id) {
-                        alert('Product ID is missing.');
+
+                        Swal.fire({
+                            type: "error",
+                            title: "Oops...",
+                            text: "Product ID is missing",
+                        });
+
+                        resetButton(updateButton); // Reset button state
                         return;
                     }
+
                     // Add the PUT method explicitly for Laravel
                     formData.append('_method', 'PUT');
                     $.ajax({
                         url: "{{ route('admin.product.update', '') }}/" +
-                        id, // Correct route for updating
+                            id, // Correct route for updating
                         type: 'POST', // Use POST to comply with Laravel's PUT emulation
                         data: formData,
                         processData: false,
                         contentType: false,
                         headers: {
                             'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr(
-                            'content'), // Add CSRF token for security
+                                'content'), // Add CSRF token for security
                         },
                         success: function(response) {
+                            resetButton(updateButton); // Reset button state
                             if (response.status === 'success') {
                                 $('#update').modal('hide'); // Hide the modal
-                                $('#updateProduct')[0].reset('');
+                                $('#updateProduct')[0].reset(); // Reset the form
                                 Swal.fire({
-                                icon: "success",
-                                title: "Success",
-                                text: response.message
+                                    icon: "success",
+                                    title: "Success",
+                                    text: response.message,
                                 });
                                 $('#productTable').DataTable().ajax
-                            .reload(); // Reload the table data
+                                    .reload(); // Reload the table data
                             } else {
-                                alert('Failed to update product. Please try again.');
+                                Swal.fire({
+                                    type: "error",
+                                    title: "Oops...",
+                                    text: "Failed to update product. Please try again.",
+                                });
                             }
                         },
                         error: function(xhr) {
                             console.error(xhr.responseJSON || xhr.responseText || 'Unknown error');
-                            alert('An error occurred while updating the product.');
+                            Swal.fire({
+                                type: "error",
+                                title: "Oops...",
+                                text: "An error occurred while updating the product.",
+                            });
+
+                            resetButton(updateButton); // Reset button state
                         },
                     });
                 });
+
+                /**
+                 * Reset button to original state
+                 * @param {jQuery} button
+                 */
+                $('#updateProduct')[0].reset(); // Reset the form
+                function resetButton(button) {
+                    button.html('Update Product'); // Restore original button text
+                    button.prop("disabled", false); // Enable the button
+                }
             });
+
+
 
             document.getElementById('categoryDropdown').addEventListener('change', function() {
                 const categoryId = this.value;
@@ -708,7 +793,6 @@
                             }
                         },
                         error: function(xhr) {
-                            console.error("Error fetching attributes:", xhr.responseText);
                             attributeContainer.innerHTML =
                                 '<p class="text-danger">Unable to fetch attributes. Please try again.</p>';
                         }
