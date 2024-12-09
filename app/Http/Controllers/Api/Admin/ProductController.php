@@ -11,6 +11,7 @@ use App\Models\ProductAttribute;
 use App\Models\Attribute;
 use App\Models\Category;
 use Yajra\DataTables\DataTables;
+use Illuminate\Support\Facades\Storage;
 
 class ProductController extends Controller
 {
@@ -231,6 +232,7 @@ class ProductController extends Controller
             if ($request->hasFile('images')) {
                 // Delete old images
                 $oldImages = json_decode($product->image, true);
+                
                 if ($oldImages) {
                     foreach ($oldImages as $oldImage) {
                         // Delete each old image file from storage
