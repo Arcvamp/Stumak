@@ -20,8 +20,8 @@ class ProductController extends Controller
     {
         // Fetch and display all products
         $categories = Category::all(); // Retrieves all categories
-        return view('admins.products.list', [
-            'title' => 'Product list'
+        return view('admins.products.index', [
+            'title' => 'Products'
         ], compact('categories')); // Adjust the view path as needed
     }
 

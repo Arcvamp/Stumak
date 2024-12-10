@@ -127,46 +127,10 @@
                             </a>
                         </li>
                         <li class="sidebar-item">
-                            <a class="sidebar-link has-arrow" href="#">
+                            <a class="sidebar-link " href="{{ url('api/admin/product') }}">
                                 <iconify-icon icon="solar:screencast-2-linear" class="fs-5"></iconify-icon>
-                                <span class="hide-menu">product</span>
-                            </a>
-                            <ul aria-expanded="false" class="collapse first-level">
-
-
-                                <li class="sidebar-item">
-                                    <a href="{{ url('api/admin/product') }}" class="sidebar-link sublink">
-                                        <div class="round-16 d-flex align-items-center justify-content-center">
-                                            <i class="sidebar-icon"></i>
-                                        </div>
-                                        <span class="hide-menu"> List </span>
-                                    </a>
-                                </li>
-                                <li class="sidebar-item">
-                                    <a href="../main/eco-checkout.html" class="sidebar-link sublink">
-                                        <div class="round-16 d-flex align-items-center justify-content-center">
-                                            <i class="sidebar-icon"></i>
-                                        </div>
-                                        <span class="hide-menu"> Checkout </span>
-                                    </a>
-                                </li>
-                                <li class="sidebar-item">
-                                    <a href="../main/eco-add-product.html" class="sidebar-link sublink">
-                                        <div class="round-16 d-flex align-items-center justify-content-center">
-                                            <i class="sidebar-icon"></i>
-                                        </div>
-                                        <span class="hide-menu"> Add Product </span>
-                                    </a>
-                                </li>
-                                <li class="sidebar-item">
-                                    <a href="../main/eco-edit-product.html" class="sidebar-link sublink">
-                                        <div class="round-16 d-flex align-items-center justify-content-center">
-                                            <i class="sidebar-icon"></i>
-                                        </div>
-                                        <span class="hide-menu"> Edit Product </span>
-                                    </a>
-                                </li>
-                            </ul>
+                                <span class="hide-menu">Product</span>
+                            </a>                           
                         </li>
                         <li class="sidebar-item">
                             <a class="sidebar-link" href="" id="get-url">

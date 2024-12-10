@@ -63,7 +63,6 @@
                                     <th>Description</th>
                                     <th>Negotiation</th>
                                     <th>Contact</th>
-                                    
                                     <th>option</th>
                                 </tr>
                             </thead>
@@ -78,7 +77,7 @@
                                     <th>Description</th>
                                     <th>Negotiation</th>
                                     <th>Contact</th>
-                                    
+
                                     <th>option</th>
                                 </tr>
                                 <!-- end row -->
@@ -340,7 +339,7 @@
                             data: 'contact',
                             name: 'contact'
                         },
-                        
+
                         {
                             data: null, // Action column
                             name: 'actions',
