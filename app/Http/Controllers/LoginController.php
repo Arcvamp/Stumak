@@ -5,15 +5,16 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\ValidationException;
-use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Session;
+use Firebase\JWT\JWT;
+use Firebase\JWT\Key;
 use App\Models\User;
 use App\Models\Role;
 
 class LoginController extends Controller
 {
-
-    public function create(){
+    public function index()
+    {
         return view('user/signin', [
             'title' => 'Sign in'
         ]);
@@ -21,55 +22,62 @@ class LoginController extends Controller
 
     public function store(Request $request)
     {
-
-
-        // Validate Requests
-        $req = $request->validate([
+        // Validate login input
+        $validated = $request->validate([
             'email' => ['required', 'email'],
-            'password' => ['required', 'min:8', 'confirmed']
+            'password' => ['required', 'min:8']
         ]);
 
-        // Attempt Login
-        $user = Auth::attempt($req);
-
-        if(!$user){
+        // Attempt to login using the given credentials
+        if (!Auth::attempt($validated)) {
             throw ValidationException::withMessages([
-                'error' => 'Incorrect/Invalid Authentication!'
+                'error' => 'Invalid credentials, please try again!'
             ]);
-        };
+        }
 
-        // Re-Generate Session
+        // Regenerate session
         $request->session()->regenerate();
 
-        // Redirect User
-        if($user->role->name == 'User'){
+        // Get the authenticated user
+        $user = Auth::user();
+
+        // Create JWT payload
+        $payload = [
+            'iss' => config('app.name'), // Issuer
+            'sub' => $user->id,          // Subject (user ID)
+            'iat' => time(),             // Issued at
+            'exp' => time() + 60 * 60    // Expiry (1 hour from now)
+        ];
+
+        // Generate JWT token
+        $jwtToken = JWT::encode($payload, env('JWT_SECRET'), 'HS256');
+
+        // Store JWT token in session
+        Session::put('jwt_token', $jwtToken);
+
+        // Role-based redirection
+        if ($user->role->name === 'User') {
             return redirect('/')->with('success', 'Login Successful!');
         }
 
-        if($user->role->name == 'Vendor'){
+        if ($user->role->name === 'Vendor') {
             return redirect('/vendor.dashboard')->with('success', 'Login Successful!');
         }
 
-        if($user->role->name == 'Admin'){
+        if ($user->role->name === 'Admin' || $user->role->name === 'Moderator') {
             return redirect('/admin.dashboard')->with('success', 'Login Successful!');
         }
 
-        if($user->role->name == 'Moderator'){
-            return redirect('/admin.dashboard')->with('success', 'Login Successful!');
-        }
-
-        // Return to the login page if there is a problem
-        return view('/signin', [
-            'title' => 'Sign in - '.config('app.name')
-        ]);
+        // Default redirect if role isn't matched
+        return redirect('/api/signin')->withErrors(['error' => 'Unauthorized role']);
     }
 
     public function logout(Request $request)
     {
-        // Log out the user and destroy the session
+        // Logout user
         Auth::logout();
-        Session::flush();
+        Session::flush(); // Clears the session, including JWT token
 
-        return redirect('/signin')->with('success', 'Logged Out Successfully!');
+        return redirect('/signin')->with('success', 'Logged out successfully!');
     }
 }

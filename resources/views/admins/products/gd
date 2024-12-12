@@ -1,0 +1,34 @@
+
+
+<script>
+    // This is an example of how you can dynamically load attributes when a category is selected.
+    document.getElementById("categoryDropdown").addEventListener("change", function () {
+        let categoryId = this.value;
+        let attributeContainer = document.getElementById("attributeContainer");
+        
+        if (categoryId) {
+            // Fetch the attributes for the selected category
+            fetch(`/get-attributes/${categoryId}`)
+                .then(response => response.json())
+                .then(data => {
+                    // Clear previous attributes
+                    attributeContainer.innerHTML = '';
+
+                    // Populate the attribute container with the attributes
+                    data.attributes.forEach(attribute => {
+                        let attributeInput = `
+                            <div class="mb-3">
+                                <label for="attribute-${attribute.id}" class="form-label">${attribute.name}</label>
+                                <input type="text" class="form-control" name="attributes[${attribute.id}]" value="${attribute.value || ''}">
+                            </div>
+                        `;
+                        attributeContainer.innerHTML += attributeInput;
+                    });
+                })
+                .catch(error => console.error('Error loading attributes:', error));
+        } else {
+            // Clear the attribute container if no category is selected
+            attributeContainer.innerHTML = '';
+        }
+    });
+</script>

@@ -10,39 +10,48 @@ use Illuminate\Support\Facades\Auth;
 class RegisterController extends Controller
 {
 
-    public function create(){
-
-        return view('user/register', [
-            'title' => 'Create Account'
-        ]);
-    }
-
-    public function store(Request $request){
-
-        // Validate Requests
-        $req = $request->validate([
-            'data' => ['required'],
-            'email' => ['required', 'email'],
-        ]);
-
-        // Iterate based on FE
-        // $req->
-
-        // Create Account
-        $results = User::create($req);
-
-        // Error Handling
-        if(!$results){
-            throw ValidationException::withMessages([
-                'error' => 'Error Messages'
+    public function index(Request $request){
+        if ($request->route()->getName() === 'vendor.register') {
+            return view('user/register', [
+                'title' => 'Create Stumak Vendor Account',
+                'data'=>'vendor'
+            ]);
+        } else {
+            // Regular user registration
+            return view('user/register', [
+                'title' => 'Create Stumak  Account' ,
+                'data'=>'user'               
             ]);
         }
-
-        Auth::login($results);
-
-        // Redirect to Sign in
-        return redirect('/signin');
-
+      
     }
 
+    public function store(Request $request) {
+        // Validate the request (this will automatically handle the redirection with errors if validation fails)
+        $validatedData = $request->validate([
+            'name' => 'required|string',
+            'password' => 'required|string|min:4',
+            'email' => 'required|email|unique:users,email'
+        ]);
+    
+        // Create Account
+        $user = User::create([
+            'name' => $validatedData['name'],
+            'email' => $validatedData['email'],
+            'password' => bcrypt($validatedData['password']),
+        ]);
+    
+        // Error Handling in case user creation fails
+        // if (!$user) {
+        //     return response()->json(['message' => 'User registered successfully', 'user' => $user], 201);
+        // }
+    
+        // Log the user in
+        Auth::login($user);
+    
+        // Redirect to the sign-in page or any other route after successful registration
+        return response()->json(['success' => true, 'message' => 'User registered successfully!']);
+
+    }
+    
 }
