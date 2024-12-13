@@ -12,15 +12,22 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('users', function (Blueprint $table) {
-            $table->id();
-            $table->string('name');
-            $table->foreignIdFor(App\Models\User::class, 'role_id');
-            $table->string('email')->unique();
-            $table->timestamp('email_verified_at')->nullable();
-            $table->string('password');
-            $table->rememberToken();
-            $table->timestamps();
+            $table->id(); // Auto-incrementing primary key
+            $table->string('first_name'); // First name
+            $table->string('last_name'); // Last name
+            $table->string('phone_number')->unique(); // Phone number
+            $table->foreignId('role_id')->constrained()->cascadeOnDelete(); // Foreign key to roles table
+            $table->string('email')->unique(); // Unique email address
+            $table->timestamp('email_verified_at')->nullable(); // Optional email verification timestamp
+            $table->string('password'); // Password field
+            $table->dateTime('last_login'); // Optional last login timestamp
+            $table->mediumInteger('login_count')->default(0); // Login count with a default value
+            $table->boolean('active')->default(true); // Active status, default to true
+            $table->string('matric_no')->unique(); // Unique matriculation number
+            $table->rememberToken(); // For "remember me" functionality
+            $table->timestamps(); // Created at and updated at timestamps
         });
+        
 
         Schema::create('password_reset_tokens', function (Blueprint $table) {
             $table->string('email')->primary();
