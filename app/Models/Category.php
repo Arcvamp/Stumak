@@ -10,14 +10,11 @@ class Category extends Model
     use HasFactory;
 
     protected $fillable = [
-        'category_name', // Adjust this to the actual field name in the table
+        'category_name', // Adjusted to match the database field
     ];
-
-    /**
-     * Relationship to the Product model.
-     */
-    public function products()
+    public function attributes()
     {
-        return $this->hasMany(Product::class);
+        return $this->hasMany(Attribute::class);
     }
+    
 }
