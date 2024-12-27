@@ -284,10 +284,9 @@
 
     </div>
     <div>
-
-    @endsection
-    @section('script')
-        <script>
+@endsection
+@section('script')        
+<script>
             $(document).ready(function() {
                 let table = $("#productTable").DataTable({
                     "responsive": true,
@@ -763,7 +762,7 @@
             });
 
 
-
+            
             document.getElementById('categoryDropdown').addEventListener('change', function() {
                 const categoryId = this.value;
                 const attributeContainer = document.getElementById('attributeContainer');
@@ -801,5 +800,5 @@
                         '<p class="text-muted">Please select a category to view its attributes.</p>';
                 }
             });
-        </script>
-    @endsection
+</script>
+@endsection

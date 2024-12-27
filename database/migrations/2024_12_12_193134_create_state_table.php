@@ -9,22 +9,22 @@ return new class extends Migration
     /**
      * Run the migrations.
      */
-    public function up(): void
+    public function up()
     {
-        Schema::create('attributes', function (Blueprint $table) {
+        Schema::dropIfExists('state'); // Safely drop the table if it exists
+        Schema::create('state', function (Blueprint $table) {
             $table->id();
             $table->string('name');
-            $table->foreignId('category_id');
-            $table->timestamps();
+            $table->foreignId('country_id')->constrained('country')->onDelete('cascade');
         });
-        
     }
+    
 
     /**
      * Reverse the migrations.
      */
     public function down(): void
     {
-        Schema::dropIfExists('attributes');
+        Schema::dropIfExists('state');
     }
 };

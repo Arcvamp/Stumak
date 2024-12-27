@@ -31,10 +31,23 @@ class User extends Authenticatable implements JWTSubject
      * @var array<int, string>
      */
     protected $fillable = [
-        'name',
-        'email',
+        'first_name',
+        'last_name',
+        'middle_name',
+        'matric_no',
+        'phone',
+        'country_id',
+        'state_id',
+        'city_id',
+        'post_code',
+        'street_address',
         'password',
+        'email',
+        'email_verify_token',
+        'email_verified_at',
+        'verified_status'
     ];
+    
 
     /**
      * The attributes that should be hidden for serialization.
@@ -57,5 +70,19 @@ class User extends Authenticatable implements JWTSubject
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
         ];
+    }
+    public function country()
+    {
+        return $this->belongsTo(Country::class);
+    }
+
+    public function state()
+    {
+        return $this->belongsTo(State::class);
+    }
+
+    public function city()
+    {
+        return $this->belongsTo(City::class);
     }
 }
