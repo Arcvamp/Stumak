@@ -136,5 +136,4 @@ Route::prefix('vendor')->name('vendor.')->group(function(){
         Route::post('update/{id}',[VendorProfileController::class, 'update'])->name('update');
         Route::get('fetch',[VendorProfileController::class, 'index'])->name('fetch');
     });
-    Route::
 });
