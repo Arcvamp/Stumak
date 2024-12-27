@@ -9,31 +9,77 @@ class Product extends Model
 {
     use HasFactory;
 
-    // The table associated with the model (optional if table name is 'products')
-    protected $table = 'products';
-
-    // Fillable fields to allow mass assignment
     protected $fillable = [
+        'vendor_id',
         'category_id',
+        'sub_category_id',
+        'child_category_id',
+        'brand_id',
+        'country_id',
+        'state_id',
+        'city_id',
         'title',
-        'image',
-        'price',
+        'slug',
         'description',
-        'negotiation',
-        'contact',
-        'email'
+        'image',
+        'gallary_images',
+        'video_url',
+        'price',
+        'negotiable',
+        'condition',
+        'authenticity',
+        'address',
+        'view',
+        'is_featured',
+        'is_published',
+        'published_at',
     ];
 
-    /**
-     * Get the category that owns the product.
-     */
+    protected $casts = [
+        'gallary_images' => 'array',
+        'negotiable' => 'boolean',
+        'is_featured' => 'boolean',
+        'is_published' => 'boolean',
+        'published_at' => 'datetime',
+    ];
+
+    public function vendor()
+    {
+        return $this->belongsTo(Vendor::class);
+    }
+
     public function category()
     {
-        return $this->belongsTo(Category::class, 'category_id');
+        return $this->belongsTo(Category::class);
     }
-    public function attributes()
+
+    public function subCategory()
     {
-        return $this->belongsToMany(Attribute::class, 'product_attributes', 'product_id', 'attribute_id')
-            ->withPivot('value');
+        return $this->belongsTo(SubCategory::class);
+    }
+
+    public function childCategory()
+    {
+        return $this->belongsTo(ChildCategory::class);
+    }
+
+    public function brand()
+    {
+        return $this->belongsTo(Brand::class);
+    }
+
+    public function country()
+    {
+        return $this->belongsTo(Country::class);
+    }
+
+    public function state()
+    {
+        return $this->belongsTo(State::class);
+    }
+
+    public function city()
+    {
+        return $this->belongsTo(City::class);
     }
 }

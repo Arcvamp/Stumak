@@ -7,8 +7,10 @@ use Illuminate\Http\Request;
 use App\Models\User;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\DB;
 use Yajra\DataTables\DataTables;
+use Illuminate\Support\Facades\Storage;
 
 class UserController extends Controller
 {
@@ -21,45 +23,67 @@ class UserController extends Controller
     }
 
     // Fetch users for DataTables
-    public function fetchUsers(){
-        $query = User::with('role:id,role_name') // Eager load the related Role
-            ->select(['id', 'first_name', 'last_name', 'email', 'phone_number', 'role_id', 'active', 'created_at']);
+    public function fetchALL()
+    {
+        $query = User::select([
+                'id',
+                DB::raw("CONCAT(first_name, ' ', last_name) AS full_name"),
+                'email',
+                'phone',
+                'matric_no',
+                'profile_image',
+                'status',
+                'created_at'
+            ]);
 
         return DataTables::of($query)
             ->addIndexColumn()
-            ->addColumn('role_name', function ($user) {
-                return $user->role ? $user->role->role_name : 'N/A'; 
+            ->editColumn('profile_image', function ($row) {
+                $imagePath = $row->profile_image ? asset('storage/' . $row->profile_image) : 'images/placeholder.png';
+                return '<img src="' . $imagePath . '" width="50" height="50" alt="User Image"/>';
             })
-            ->rawColumns(['role_name']) // Allow raw HTML if needed
+            ->rawColumns(['profile_image']) // Mark the 'profile_image' column as raw to render HTML
             ->make(true);
     }
 
-
     // Create a new user
-    public function store(Request $request)
+    public function create(Request $request)
     {
-        $request->validate([
+        $validator = Validator::make($request->all(),[
             'first_name' => 'required|string|max:255',
+            'middle_name' => 'nullable|string|max:255',
             'last_name' => 'required|string|max:255',
-            'email' => 'required|email|unique:users',
-            'phone_number' => 'required|numeric|unique:users',
+            'matric_no' => 'required|string|unique:users,matric_no|max:255',
+            'email' => 'required|email|unique:users,email|max:255',
+            'phone' => 'nullable|numeric|unique:users,phone',
             'password' => 'required|string|min:8',
-            'role_id' => 'required|exists:roles,id',
-            'active' => 'required|boolean',
+            'profile_image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'country_id' => 'nullable|exists:countries,id',
+            'state_id' => 'nullable|exists:states,id',
+            'city_id' => 'nullable|exists:cities,id',
+            'street_address' => 'nullable|string|max:255',
+            'post_code' => 'nullable|string|max:20',
+            'about' => 'nullable|string',
+            'terms_condition' => 'nullable|boolean',
+            'email_verified' => 'nullable|boolean',
+            'verified_status' => 'nullable|in:unverified,verified',
+            'status' => 'required|in:inactive,active',
         ]);
 
         try {
-            $user = User::create([
-                'first_name' => $request->first_name,
-                'last_name' => $request->last_name,
-                'email' => $request->email,
-                'phone_number' => $request->phone_number,
-                'password' => Hash::make($request->password),
-                'role_id' => $request->role_id,
-                'active' => $request->active,
-            ]);
+            $profileImagePath = null;
 
-            return response()->json(['status' => 'success', 'message' => 'User created successfully.']);
+            // Handle profile image upload
+            if ($request->hasFile('profile_image')) {
+                $profileImagePath = $request->file('profile_image')->store('profile_images', 'public');
+            }
+            $data = $request->all();
+            $data['password']=Hash::make($request->password);
+            $data['profile_image']=$profileImagePath;
+            // Create user record
+            $user = User::create($data);
+
+            return response()->json(['status' => 'success', 'message' => 'User created successfully.', 'user' => $user]);
         } catch (\Exception $e) {
             Log::error('User creation failed: ' . $e->getMessage());
             return response()->json(['error' => 'Failed to create user.'], 500);
@@ -67,7 +91,7 @@ class UserController extends Controller
     }
 
     // Edit user details
-    public function edit($id)
+    public function find($id)
     {
         try {
             $user = User::findOrFail($id);
@@ -82,26 +106,29 @@ class UserController extends Controller
     {
         $user = User::findOrFail($id);
 
-        $request->validate([
+        $validator = Validator::make($request->all(),[
             'first_name' => 'required|string|max:255',
             'last_name' => 'required|string|max:255',
             'email' => 'required|email|unique:users,email,' . $user->id,
-            'phone_number' => 'required|numeric|unique:users,phone_number,' . $user->id,
-            'password' => 'nullable|string|min:8',
-            'role_id' => 'required|exists:roles,id',
-            'active' => 'required|boolean',
+            'phone' => 'nullable|numeric|unique:users,phone,' . $user->id,
+            'status' => 'required|in:inactive,active',
         ]);
 
         try {
-            $user->update([
-                'first_name' => $request->first_name,
-                'last_name' => $request->last_name,
-                'email' => $request->email,
-                'phone_number' => $request->phone_number,
-                'password' => $request->password ? Hash::make($request->password) : $user->password,
-                'role_id' => $request->role_id,
-                'active' => $request->active,
-            ]);
+            $profileImagePath = $user->profile_image;
+
+            // Handle profile image upload
+            if ($request->hasFile('profile_image')) {
+                // Delete old image if exists
+                if ($profileImagePath) {
+                    Storage::disk('public')->delete($profileImagePath);
+                }
+                $profileImagePath = $request->file('profile_image')->store('profile_images', 'public');
+            }
+            $data=$request->all();
+            $data=$profileImagePath;
+            // Update user record
+            $user->update($data);
 
             return response()->json(['status' => 'success', 'message' => 'User updated successfully.']);
         } catch (\Exception $e) {
@@ -115,6 +142,12 @@ class UserController extends Controller
     {
         try {
             $user = User::findOrFail($id);
+            
+            // Delete profile image if exists
+            if ($user->profile_image) {
+                Storage::disk('public')->delete($user->profile_image);
+            }
+
             $user->delete();
 
             return response()->json(['status' => 'success', 'message' => 'User deleted successfully.']);

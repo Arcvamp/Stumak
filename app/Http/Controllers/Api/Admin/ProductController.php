@@ -8,8 +8,12 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use App\Models\Product;
 use App\Models\ProductAttribute;
+use Illuminate\Support\Facades\Validator;
 use App\Models\Attribute;
 use App\Models\Category;
+use App\Models\SubCategory;
+use App\Models\ChildCategory;
+use APp\Models\Brand;
 use Yajra\DataTables\DataTables;
 use Illuminate\Support\Facades\Storage;
 
@@ -26,7 +30,7 @@ class ProductController extends Controller
     }
 
     // Fetching products
-    public function fetchProducts(Request $request)
+    public function fetchProducts()
     {
         $query = Product::with('category:id,category_name')
             ->select(['id', 'category_id', 'title', 'image', 'price', 'description', 'negotiation', 'contact', 'created_at']);
@@ -56,86 +60,73 @@ class ProductController extends Controller
             ->make(true); // This returns the formatted JSON response
     }
 
-
-
-    public function store(Request $request)
+    public function create(Request $request)
     {
         // Validate the form input
-        $request->validate([
-            'product_name' => 'required|string|max:255',
-            'vendor_email' => 'required|email|max:255',
-            'vendor_number' => 'required|numeric',
-            'description' => 'nullable|string',
-            'images' => 'nullable|array',
-            'images.*' => 'file|mimes:jpg,jpeg,png|max:5120', // 5 MB max per image
-            'base_price' => 'required|numeric|min:0',
+        $validator = Validator::make($request->all(), [
+            'vendor_id' => 'required|exists:vendors,id',
             'category_id' => 'required|exists:categories,id',
-            'attributes' => 'nullable|array', // Attributes sent dynamically
-            'attributes.*' => 'nullable|string', // Attribute values
+            'sub_category_id' => 'nullable|exists:sub_categories,id',
+            'child_category_id' => 'nullable|exists:child_categories,id',
+            'brand_id' => 'nullable|exists:brands,id',
+            'country_id' => 'nullable|exists:country,id',
+            'state_id' => 'nullable|exists:state,id',
+            'city_id' => 'nullable|exists:city,id',
+            'title' => 'required|string|max:255',
+            'slug' => 'required|string|max:255|unique:products,slug',
+            'description' => 'nullable|string',
+            'image' => 'nullable|file|mimes:jpg,jpeg,png|max:5120', // Single image validation
+            'gallary_images' => 'nullable|array',
+            'gallary_images.*' => 'file|mimes:jpg,jpeg,png|max:5120',
+            'video_url' => 'nullable|url',
+            'price' => 'required|numeric|min:0',
             'negotiable' => 'nullable|boolean',
+            'condition' => 'nullable|string',
+            'authenticity' => 'nullable|string',
+            'address' => 'nullable|string',
+            'view' => 'nullable|integer',
+            'is_featured' => 'nullable|boolean',
+            'is_published' => 'nullable|boolean',
+            'published_at' => 'nullable|date',
         ]);
-
-        // Start a database transaction
-        DB::beginTransaction();
+        if ($validator->fails()) {
+            return response()->json(['errors' => $validator->errors()], 422);
+        }
+        DB::beginTransaction(); // Start the transaction
         try {
-            // Handle images (if any)
-            $images = [];
-            if ($request->hasFile('images')) {
-                foreach ($request->file('images') as $image) {
-                    $imagePath = $image->store('products/', 'public');
-                    $images[] = $imagePath;
+            // Handle the main image (if any)
+            $imagePath = null;
+            if ($request->hasFile('image')) {
+                $imagePath = $request->file('image')->create('products/', 'public');
+            }
+            // Handle gallery images (if any)
+            $galleryImages = [];
+            if ($request->hasFile('gallary_images')) {
+                foreach ($request->file('gallary_images') as $image) {
+                    $galleryImages[] = $image->create('products/gallery/', 'public');
                 }
             }
-            $negotiable = $request->negotiable ?? 0;
-            // Save product details in `products` table
-            $product = Product::create([
-                'category_id' => $request->category_id,
-                'title' => $request->product_name,
-                'email' => $request->vendor_email,
-                'contact' => $request->vendor_number,
-                'description' => $request->description,
-                'price' => $request->base_price,
-                'negotiation' => $negotiable,
-                'image' => !empty($images) ? json_encode($images) : null,
-            ]);
-
-            // Handle dynamic attributes
-            if ($request->has('attributes')) {
-                foreach ($request->attributes as $attributeId => $value) {
-                    if (!empty($value)) {
-                        ProductAttribute::create([
-                            'product_id' => $product->id,
-                            'attribute_id' => $attributeId,
-                            'value' => $value,
-                        ]);
-                    }
-                }
-            }
-
-            // Commit the transaction
-            DB::commit();
-
-            return response()->json(['status' => 'success', 'message' => 'Product created successfully.'], 200);
+            // Prepare the data
+            $data = $request->all();
+            $data['gallery_images'] = $galleryImages;
+            $data['image'] = $imagePath;
+            // Create the product
+            $product = Product::create($data);
+            DB::commit(); // Commit the transaction
+            return response()->json(['status' => 'success', 'message' => 'Product created successfully.', 'product' => $product], 200);
         } catch (\Exception $e) {
-            DB::rollBack();
-
+            DB::rollBack(); // Roll back the transaction if an error occurs
             // Log the exception for debugging
             Log::error('Product creation failed: ' . $e->getMessage());
-
-            // Return a detailed error in the response
             return response()->json(['error' => 'Failed to create product. ' . $e->getMessage()], 500);
         }
     }
 
-
-
-    public function edit($id)
+    public function find($id)
     {
         try {
             // Fetch the product by ID with related attributes
-            $product = Product::with(['attributes'])
-                ->where('id', $id)
-                ->first();
+            $product = Product::find($id);
 
             // Check if the product exists
             if (!$product) {
@@ -147,24 +138,7 @@ class ProductController extends Controller
             // Return product details with attributes
             return response()->json([
                 'message' => 'Product retrieved successfully.',
-                'product' => [
-                    'id' => $product->id,
-                    'title' => $product->title,
-                    'category_id' => $product->category_id,
-                    'image' => $product->image,
-                    'price' => $product->price,
-                    'description' => $product->description,
-                    'negotiation' => $product->negotiation,
-                    'contact' => $product->contact,
-                    'email' => $product->email,
-                    'attributes' => $product->attributes->map(function ($attribute) {
-                        return [
-                            'id' => $attribute->id,
-                            'name' => $attribute->name,
-                            'value' => $attribute->pivot->value,
-                        ];
-                    }),
-                ],
+                'product' => $product,
             ], 200);
         } catch (\Exception $e) {
             return response()->json([
@@ -173,7 +147,6 @@ class ProductController extends Controller
             ], 500);
         }
     }
-
 
     public function destroy($id)
     {
@@ -209,102 +182,139 @@ class ProductController extends Controller
     public function update(Request $request, $id)
     {
         $product = Product::findOrFail($id);
-
         // Validate the input
-        $request->validate([
-            'product_name' => 'required|string|max:255',
-            'vendor_email' => 'required|email|max:255',
-            'vendor_number' => 'required|numeric',
-            'description' => 'nullable|string',
-            'images' => 'nullable|array',
-            'images.*' => 'file|mimes:jpg,jpeg,png|max:5120', // 5 MB max per image
-            'base_price' => 'required|numeric|min:0',
+        $validator = Validator::make($request->all(), [
             'category_id' => 'required|exists:categories,id',
-            'attributes' => 'nullable|array', // Attributes sent dynamically
-            'attributes.*' => 'nullable|string', // Attribute values
+            'sub_category_id' => 'nullable|exists:sub_categories,id',
+            'child_category_id' => 'nullable|exists:child_categories,id',
+            'brand_id' => 'nullable|exists:brands,id',
+            'country_id' => 'nullable|exists:country,id',
+            'state_id' => 'nullable|exists:state,id',
+            'city_id' => 'nullable|exists:city,id',
+            'product_name' => 'required|string|max:255',
+            'slug' => 'required|string|max:255|unique:products,slug,' . $product->id,
+            'description' => 'nullable|string',
+            'image' => 'nullable|file|mimes:jpg,jpeg,png|max:5120',
+            'gallary_images' => 'nullable|array',
+            'gallary_images.*' => 'file|mimes:jpg,jpeg,png|max:5120',
+            'video_url' => 'nullable|url',
+            'price' => 'required|numeric|min:0',
             'negotiable' => 'nullable|boolean',
+            'condition' => 'nullable|string',
+            'authenticity' => 'nullable|string',
+            'address' => 'nullable|string',
+            'view' => 'nullable|integer',
+            'is_featured' => 'nullable|boolean',
+            'is_published' => 'nullable|boolean',
+            'published_at' => 'nullable|date',
         ]);
-
-        // Start a database transaction
+        if ($validator->fails()) {
+            return response()->json(['errors' => $validator->errors()], 422);
+        }
         DB::beginTransaction();
         try {
-            // Handle image deletion if there are new images
-            if ($request->hasFile('images')) {
-                // Delete old images
-                $oldImages = json_decode($product->image, true);
-                
-                if ($oldImages) {
-                    foreach ($oldImages as $oldImage) {
-                        // Delete each old image file from storage
-                        Storage::disk('public')->delete($oldImage);
-                    }
+            // Handle main image update
+            $imagePath = $product->image;
+            if ($request->hasFile('image')) {
+                // Delete old image if it exists
+                if ($product->image) {
+                    Storage::disk('public')->delete($product->image);
                 }
-
-                // Handle the new images
-                $images = [];
-                foreach ($request->file('images') as $image) {
-                    $imagePath = $image->store('products/', 'public');
-                    $images[] = $imagePath;
-                }
-            } else {
-                $images = json_decode($product->image, true); // Keep the old images if no new images are uploaded
+                // create the new image
+                $imagePath = $request->file('image')->create('products/', 'public');
             }
-
-            // Default 'negotiable' to 0 if not provided
-            $negotiable = $request->negotiable ?? 0;
-
-            // Update product details in the `products` table
-            $product->update([
-                'category_id' => $request->category_id,
-                'title' => $request->product_name,
-                'email' => $request->vendor_email,
-                'contact' => $request->vendor_number,
-                'description' => $request->description,
-                'price' => $request->base_price,
-                'negotiation' => $negotiable,
-                'image' => !empty($images) ? json_encode($images) : null, // Update with new images or retain old ones if no new images
-            ]);
-
-            // Handle dynamic attributes
-            if ($request->has('attributes')) {
-                // Optionally, delete old attributes if you're replacing them
-                ProductAttribute::where('product_id', $product->id)->delete();
-
-                foreach ($request->attributes as $attributeId => $value) {
-                    if (!empty($value)) {
-                        ProductAttribute::create([
-                            'product_id' => $product->id,
-                            'attribute_id' => $attributeId,
-                            'value' => $value,
-                        ]);
-                    }
+            // Handle gallery images update
+            $galleryImages = json_decode($product->gallary_images, true) ?: [];
+            if ($request->hasFile('gallary_images')) {
+                // Delete old gallery images if they exist
+                foreach ($galleryImages as $oldImage) {
+                    Storage::disk('public')->delete($oldImage);
+                }
+                $galleryImages = [];
+                foreach ($request->file('gallary_images') as $image) {
+                    $galleryImages[] = $image->create('products/gallery/', 'public');
                 }
             }
-
-            // Commit the transaction
+            // Prepare the data for update
+            $data = $request->all();
+            $data['image'] = $imagePath;
+            $data['gallary_images'] = json_encode($galleryImages);
+            // Update the product
+            $product->update($data);
             DB::commit();
-
             return response()->json(['status' => 'success', 'message' => 'Product updated successfully.'], 200);
         } catch (\Exception $e) {
             DB::rollBack();
-
-            // Log the exception for debugging
             Log::error('Product update failed: ' . $e->getMessage());
 
-            // Return a detailed error in the response
             return response()->json(['error' => 'Failed to update product. ' . $e->getMessage()], 500);
         }
     }
 
-    public function getAttributesByCategory($categoryId)
+
+    public function getCategory()
+    {
+        $Category = Category::all();
+        return response()->json($Category, 200);
+    }
+
+    public function getSubCategoriesByCategory($categoryId)
     {
         try {
-            // Fetch attributes for the selected category
-            $attributes = Attribute::where('category_id', $categoryId)->get();
-            return response()->json($attributes);
+            // Fetch subcategories for the selected category
+            $subCategories = SubCategory::where('category_id', $categoryId)->get();
+            return response()->json($subCategories);
         } catch (\Exception $e) {
-            Log::error('Failed to fetch attributes: ' . $e->getMessage());
-            return response()->json(['error' => 'Failed to fetch attributes.'], 500);
+            Log::error('Failed to fetch subcategories: ' . $e->getMessage());
+            return response()->json(['error' => 'Failed to fetch subcategories.'], 500);
+        }
+    }
+
+    public function getChildCategoriesBySubCategory($subCategoryId)
+    {
+        try {
+            // Fetch child categories for the selected subcategory
+            $childCategories = ChildCategory::where('sub_category_id', $subCategoryId)->get();
+            return response()->json($childCategories);
+        } catch (\Exception $e) {
+            Log::error('Failed to fetch child categories: ' . $e->getMessage());
+            return response()->json(['error' => 'Failed to fetch child categories.'], 500);
+        }
+    }
+
+    public function getBrandsByCategory($categoryId)
+    {
+        try {
+            // Fetch brands for the selected category
+            $brands = Brand::where('category_id', $categoryId)->get();
+            return response()->json($brands);
+        } catch (\Exception $e) {
+            Log::error('Failed to fetch brands: ' . $e->getMessage());
+            return response()->json(['error' => 'Failed to fetch brands.'], 500);
+        }
+    }
+
+    public function getBrandsBySubCategory($subCategoryId)
+    {
+        try {
+            // Fetch brands for the selected subcategory
+            $brands = Brand::where('sub_category_id', $subCategoryId)->get();
+            return response()->json($brands);
+        } catch (\Exception $e) {
+            Log::error('Failed to fetch brands: ' . $e->getMessage());
+            return response()->json(['error' => 'Failed to fetch brands.'], 500);
+        }
+    }
+
+    public function getBrandsByChildCategory($childCategoryId)
+    {
+        try {
+            // Fetch brands for the selected child category
+            $brands = Brand::where('child_category_id', $childCategoryId)->get();
+            return response()->json($brands);
+        } catch (\Exception $e) {
+            Log::error('Failed to fetch brands: ' . $e->getMessage());
+            return response()->json(['error' => 'Failed to fetch brands.'], 500);
         }
     }
 }

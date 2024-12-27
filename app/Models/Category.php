@@ -16,5 +16,20 @@ class Category extends Model
     {
         return $this->hasMany(Attribute::class);
     }
-    
+    public function subCategories()
+    {
+        return $this->hasMany(SubCategory::class);
+    }
+
+    // Relationship with ChildCategory
+    public function childCategories()
+    {
+        return $this->hasManyThrough(ChildCategory::class, SubCategory::class);
+    }
+
+    // Relationship with Brand
+    public function brands()
+    {
+        return $this->hasMany(Brand::class);
+    }
 }
