@@ -185,7 +185,7 @@ class UserProductController extends Controller
      */
     public function show($id)
     {
-        $product = Product::with(['categories', 'tags', 'images'])->findOrFail($id);
+        $product = Product::with(['categories', 'images'])->findOrFail($id);
 
         return view('products.show', compact('product'));
     }
