@@ -13,7 +13,7 @@ use App\Models\Attribute;
 use App\Models\Category;
 use App\Models\SubCategory;
 use App\Models\ChildCategory;
-use APp\Models\Brand;
+use App\Models\Brand;
 use Yajra\DataTables\DataTables;
 use Illuminate\Support\Facades\Storage;
 
@@ -33,7 +33,7 @@ class ProductController extends Controller
     public function fetchProducts()
     {
         $query = Product::with('category:id,category_name')
-            ->select(['id', 'category_id', 'title', 'image', 'price', 'description', 'negotiation', 'contact', 'created_at']);
+            ->select(['id', 'category_id', 'title', 'image', 'price', 'description', 'negotiable', 'condition', 'created_at']);
 
         return DataTables::of($query)
             ->addIndexColumn()
@@ -148,7 +148,7 @@ class ProductController extends Controller
         }
     }
 
-    public function destroy($id)
+    public function delete($id)
     {
         $product = Product::findOrFail($id);
 
@@ -184,21 +184,21 @@ class ProductController extends Controller
         $product = Product::findOrFail($id);
         // Validate the input
         $validator = Validator::make($request->all(), [
-            'category_id' => 'required|exists:categories,id',
+            'category_id' => 'nullable|exists:categories,id',
             'sub_category_id' => 'nullable|exists:sub_categories,id',
             'child_category_id' => 'nullable|exists:child_categories,id',
             'brand_id' => 'nullable|exists:brands,id',
             'country_id' => 'nullable|exists:country,id',
             'state_id' => 'nullable|exists:state,id',
             'city_id' => 'nullable|exists:city,id',
-            'product_name' => 'required|string|max:255',
-            'slug' => 'required|string|max:255|unique:products,slug,' . $product->id,
+            'product_name' => 'nullable|string|max:255',
+            'slug' => 'nullable|string|max:255|unique:products,slug,' . $product->id,
             'description' => 'nullable|string',
             'image' => 'nullable|file|mimes:jpg,jpeg,png|max:5120',
             'gallary_images' => 'nullable|array',
             'gallary_images.*' => 'file|mimes:jpg,jpeg,png|max:5120',
             'video_url' => 'nullable|url',
-            'price' => 'required|numeric|min:0',
+            'price' => 'nullable|numeric|min:0',
             'negotiable' => 'nullable|boolean',
             'condition' => 'nullable|string',
             'authenticity' => 'nullable|string',

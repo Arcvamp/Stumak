@@ -54,10 +54,10 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::get('data', [AdminProductController::class, 'getProductsData'])->name('data');
         Route::get('fetch', [AdminProductController::class, 'fetchProducts'])->name('fetch');
         Route::put('update/{id}', [AdminProductController::class, 'update'])->name('update');
-        Route::delete('delete/{id}', [AdminProductController::class, 'destroy'])->name('destroy');
-        Route::get('categories/{categoryId}', [AdminProductController::class, 'getAttributesByCategory'])->name('attributes');
-        Route::get('category', [AdminProductController::class, 'getCategory'])->name('getcategory');
-        Route::get('getSubCategoriesByCategory/{id}', [AdminProductController::class, 'getSubCategoriesByCategory'])->name('subcategories');
+        Route::delete('delete/{id}', [AdminProductController::class, 'destroy'])->name('delete');
+        // Route::get('categories/{categoryId}', [AdminProductController::class, 'getAttributesByCategory'])->name('attributes');
+        Route::get('category', [AdminProductController::class, 'getCategory'])->name('category');
+        Route::get('getSubCategoriesByCategory/{id}', [AdminProductController::class, 'getSubCategoriesByCategory'])->name('getSubCategoriesByCategory');
         Route::get('getChildCategoriesBySubCategory/{id}', [AdminProductController::class, 'getChildCategoriesBySubCategory'])->name('getChildCategoriesBySubCategory');
         Route::get('getBrandsByCategory/{id}', [AdminProductController::class, 'getBrandsByCategory'])->name('getBrandsByCategory');
         Route::get('getBrandsBySubCategory/{id}', [AdminProductController::class, 'getBrandsBySubCategory'])->name('getBrandsBySubCategory');
@@ -104,7 +104,7 @@ Route::prefix('admin')->name('admin.')->group(function () {
     Route::prefix('vendor')->name('vendor.')->group(function () {
         Route::get('fetch', [AdminVendorController::class, 'getVendorsWithProductCount'])->name('fetch');
         Route::post('create', [AdminVendorController::class, 'create'])->name('create');
-        Route::get('find/{id}', [AdminVendorController::class, 'show'])->name('find');
+        Route::get('find/{id}', [AdminVendorController::class, 'find'])->name('find');
         Route::put('update/{id}', [AdminVendorController::class, 'update'])->name('update');
         Route::delete('delete/{id}', [AdminVendorController::class, 'delete'])->name('delete');
     });
