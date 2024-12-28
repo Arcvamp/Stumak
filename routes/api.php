@@ -56,12 +56,12 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::put('update/{id}', [AdminProductController::class, 'update'])->name('update');
         Route::delete('delete/{id}', [AdminProductController::class, 'destroy'])->name('destroy');
         Route::get('categories/{categoryId}', [AdminProductController::class, 'getAttributesByCategory'])->name('attributes');
-        Route::get('category',[AdminProductController::class,'getCategory' ])->name('getcategory');
-        Route::get('getSubCategoriesByCategory/{id}',[AdminProductController::class,'getSubCategoriesByCategory' ])->name('subcategories');
-        Route::get('getChildCategoriesBySubCategory/{id}',[AdminProductController::class,'getChildCategoriesBySubCategory'])->name('getChildCategoriesBySubCategory');
-        Route::get('getBrandsByCategory/{id}',[AdminProductController::class,'getBrandsByCategory'])->name('getBrandsByCategory');
-        Route::get('getBrandsBySubCategory/{id}',[AdminProductController::class, 'getBrandsBySubCategory'])->name('getBrandsBySubCategory');
-        Route::get('getBrandsByChildCategory/{id}',[AdminProductController::class,'getBrandsByChildCategory'])->name('getBrandsByChildCategory');
+        Route::get('category', [AdminProductController::class, 'getCategory'])->name('getcategory');
+        Route::get('getSubCategoriesByCategory/{id}', [AdminProductController::class, 'getSubCategoriesByCategory'])->name('subcategories');
+        Route::get('getChildCategoriesBySubCategory/{id}', [AdminProductController::class, 'getChildCategoriesBySubCategory'])->name('getChildCategoriesBySubCategory');
+        Route::get('getBrandsByCategory/{id}', [AdminProductController::class, 'getBrandsByCategory'])->name('getBrandsByCategory');
+        Route::get('getBrandsBySubCategory/{id}', [AdminProductController::class, 'getBrandsBySubCategory'])->name('getBrandsBySubCategory');
+        Route::get('getBrandsByChildCategory/{id}', [AdminProductController::class, 'getBrandsByChildCategory'])->name('getBrandsByChildCategory');
     });
 
     // Category routes
@@ -73,7 +73,8 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::delete('delete/{id}', [AdminCategoryController::class, 'deleteCategory'])->name('delete');
     });
 
-    Route::prefix('subcategory')->name('subCategory')->group(function () {
+    // Subcategory routes
+    Route::prefix('subcategory')->name('subCategory.')->group(function () {
         Route::get('fetch', [AdminCategoryController::class, 'findALLSubcategory'])->name('fetch');
         Route::post('create', [AdminCategoryController::class, 'createSubcategory'])->name('create');
         Route::get('find/{id}', [AdminCategoryController::class, 'findSubcategory'])->name('find');
@@ -81,7 +82,8 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::delete('delete/{id}', [AdminCategoryController::class, 'deleteSubcategory'])->name('delete');
     });
 
-    Route::prefix('childcategory')->name('childcategory')->group(function () {
+    // Childcategory routes
+    Route::prefix('childcategory')->name('childcategory.')->group(function () {
         Route::get('fetch', [AdminCategoryController::class, 'findALLChildcategory'])->name('fetch');
         Route::post('create', [AdminCategoryController::class, 'createChildcategory'])->name('create');
         Route::get('find/{id}', [AdminCategoryController::class, 'findChildcategory'])->name('find');
@@ -89,7 +91,8 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::delete('delete/{id}', [AdminCategoryController::class, 'deleteChildcategory'])->name('delete');
     });
 
-    Route::prefix('childcategory')->name('childcategory')->group(function () {
+    // Brand routes
+    Route::prefix('brand')->name('brand.')->group(function () {
         Route::get('fetch', [AdminCategoryController::class, 'findALLBrand'])->name('fetch');
         Route::post('create', [AdminCategoryController::class, 'createBrand'])->name('create');
         Route::get('find/{id}', [AdminCategoryController::class, 'findBrand'])->name('find');
@@ -116,22 +119,23 @@ Route::prefix('admin')->name('admin.')->group(function () {
 });
 
 // Vendor routes
-Route::prefix('vendor')->name('vendor.')->group(function(){
+Route::prefix('vendor')->name('vendor.')->group(function () {
     Route::get('dashboard', [VendorDashController::class, 'index'])->name('dashboard');
 
-    Route::prefix('product')->name('product')->group(function(){
-        Route::get('fetch',[VendorProductController::class, 'FetchAllproduct'])->name('fetch');
-        Route::post('create',[VendorProductController::class, 'createProduct'])->name('create');
-        Route::get('fetch',[VendorProductController::class, 'find'])->name('find');
-        Route::post('update/{id}',[VendorProductController::class, 'update'])->name('update');
-        Route::get('delete/{id}',[VendorProductController::class,'delete' ])->name('delete');
-        Route::get('category',[VendorProductController::class,'getCategory' ])->name('getcategory');
-        Route::get('getSubCategoriesByCategory/{id}',[VendorProductController::class,'getSubCategoriesByCategory' ])->name('subcategories');
-        Route::get('getChildCategoriesBySubCategory/{id}',[VendorProdutController::class,'getChildCategoriesBySubCategory'])->name('getChildCategoriesBySubCategory');
-        Route::get('getBrandsByCategory/{id}',[VendorProductController::class,'getBrandsByCategory'])->name('getBrandsByCategory');
-        Route::get('getBrandsBySubCategory/{id}',[VendorProductController::class, 'getBrandsBySubCategory'])->name('getBrandsBySubCategory');
-        Route::get('getBrandsByChildCategory/{id}',[VendorProductController::class,'getBrandsByChildCategory'])->name('getBrandsByChildCategory');
+    Route::prefix('product')->name('product.')->group(function () {
+        Route::get('fetch', [VendorProductController::class, 'FetchAllproduct'])->name('fetch');
+        Route::get('find/{id}', [VendorProductController::class, 'find'])->name('find');
+        Route::post('create', [VendorProductController::class, 'createProduct'])->name('create');
+        Route::put('update/{id}', [VendorProductController::class, 'update'])->name('update');
+        Route::delete('delete/{id}', [VendorProductController::class, 'delete'])->name('delete');
+        Route::get('category', [VendorProductController::class, 'getCategory'])->name('getcategory');
+        Route::get('getSubCategoriesByCategory/{id}', [VendorProductController::class, 'getSubCategoriesByCategory'])->name('subcategories');
+        Route::get('getChildCategoriesBySubCategory/{id}', [VendorProductController::class, 'getChildCategoriesBySubCategory'])->name('getChildCategoriesBySubCategory');
+        Route::get('getBrandsByCategory/{id}', [VendorProductController::class, 'getBrandsByCategory'])->name('getBrandsByCategory');
+        Route::get('getBrandsBySubCategory/{id}', [VendorProductController::class, 'getBrandsBySubCategory'])->name('getBrandsBySubCategory');
+        Route::get('getBrandsByChildCategory/{id}', [VendorProductController::class, 'getBrandsByChildCategory'])->name('getBrandsByChildCategory');
     });
+
     Route::prefix('profile')->name('profile')->group(function (){
         Route::post('update/{id}',[VendorProfileController::class, 'update'])->name('update');
         Route::get('fetch',[VendorProfileController::class, 'index'])->name('fetch');
